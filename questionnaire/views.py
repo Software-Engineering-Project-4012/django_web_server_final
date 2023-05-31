@@ -42,3 +42,6 @@ class QuestionnaireList(generics.ListCreateAPIView):
 class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = QuestionnaireSerializer
     permission_classes = (IsAdminUser, )
+
+    def get_queryset(self):
+        return Questionnaire.objects.filter(creator=self.request.user)
