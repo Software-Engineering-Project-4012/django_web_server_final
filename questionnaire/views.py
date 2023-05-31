@@ -6,8 +6,10 @@ from rest_framework import filters
 
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
+    search_fields = ['template_name']
+    filter_backends = (filters.SearchFilter,)
     serializer_class = QuestionnaireTemplateSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def get_queryset(self):
         return QuestionnaireTemplate.objects.filter(creator=self.request.user)
@@ -18,7 +20,7 @@ class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
 
 class QuestionnaireTemplateRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = QuestionnaireTemplateSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     def get_queryset(self):
         return QuestionnaireTemplate.objects.filter(creator=self.request.user)
