@@ -9,7 +9,8 @@ from django.shortcuts import get_object_or_404
 from accounts.models import CustomUser
 import ghasedakpack
 import secrets
-
+from .serializers import CustomUserSerializer
+from rest_framework import filters
 
 SMS_API = 'c892fcf70ec41cec06b46bade01398c9f06fb3b4003438d115216e86c2527521'
 LINE_NUMBER = '5000270'
@@ -84,6 +85,8 @@ class ChangeEmailAPIView(APIView):
 
 
 class GetEmployeeListAPIView(APIView):
+    search_fields = ['first_name', 'last_name', 'position', 'username', 'email']
+    filter_backends = (filters.SearchFilter,)
     permission_classes = (IsAdminUser,)
 
     def get(self, request, *args, **kwargs):
