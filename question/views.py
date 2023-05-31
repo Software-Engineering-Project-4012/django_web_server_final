@@ -22,3 +22,20 @@ class CreateQuestionView(APIView):
                                            style=style, rows=rows, options=options)
         question.save()
         return Response({'message': 'Question created successfully'}, status=status.HTTP_201_CREATED)
+
+class EditQuestionView(APIView):
+    permission_classes = (IsAdminUser,)
+
+    def put(self, request, *args, **kwargs):
+        question = Question.objects.get(id=request.data.get('question_id'))
+        question.question_type = request.data.get('type')
+        question.question_text = request.data.get('question')
+        question.template_id = request.data.get('template_id')
+        question.template = QuestionnaireTemplate.objects.get(id=template_id)
+        question.question_position = request.data.get('number')
+        question.style = request.data.get('style')
+        question.rows = request.data.get('rows')
+        question.options = request.data.get('options')
+        question.save()
+
+        return Response({"message": "Question edited successfully!"}, status=status.HTTP_200_OK)
