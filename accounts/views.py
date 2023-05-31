@@ -122,20 +122,23 @@ class EditEmployeeAPIView(APIView):
     permission_classes = (IsAdminUser,)
 
     def put(self, request, *args, **kwargs):
-        first_name = request.data.get("first_name")
-        last_name = request.data.get("last_name")
         username = request.data.get("username")
-        email = request.data.get("email")
-        faculty = request.data.get("faculty")
-        position = request.data.get("position")
-
         user = CustomUser.objects.get(username=username)
+
+        first_name = request.data.get("first_name", user.first_name)
+        last_name = request.data.get("last_name", user.last_name)
+        email = request.data.get("email", user.email)
+        faculty = request.data.get("faculty", user.faculty)
+        position = request.data.get("position", user.position)
+        phone = request.data.get("phone", user.phone)
+
         user.first_name = first_name
         user.last_name = last_name
         user.username = username
         user.email = email
         user.faculty = faculty
         user.position = position
+        user.phone = phone
         user.save()
 
         return Response({"message": "Employee updated successfully!"}, status=status.HTTP_200_OK)
@@ -174,20 +177,23 @@ class EditStudentAPIView(APIView):
     permission_classes = (IsAdminUser,)
 
     def put(self, request, *args, **kwargs):
-        first_name = request.data.get("first_name")
-        last_name = request.data.get("last_name")
         username = request.data.get("username")
-        email = request.data.get("email")
-        faculty = request.data.get("faculty")
-        position = request.data.get("position")
-
         user = CustomUser.objects.get(username=username)
+
+        first_name = request.data.get("first_name", user.first_name)
+        last_name = request.data.get("last_name", user.last_name)
+        email = request.data.get("email", user.email)
+        faculty = request.data.get("faculty", user.faculty)
+        position = request.data.get("position", user.position)
+        phone = request.data.get("phone", user.phone)
+
         user.first_name = first_name
         user.last_name = last_name
         user.username = username
         user.email = email
         user.faculty = faculty
         user.position = position
+        user.phone = phone
         user.save()
 
         return Response({"message": "Student updated successfully!"}, status=status.HTTP_200_OK)

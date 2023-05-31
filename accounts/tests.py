@@ -12,7 +12,8 @@ class AccountTest(TestCase):
 
         self.user_admin_test = CustomUser.objects.create_superuser(username='test_admin', password='test_admin',
                                                                    first_name='audry', last_name='ebrahimi',
-                                                                   faculty='ce', role='emp', position='Training Manager', email='audry@gmail.com')
+                                                                   faculty='ce', role='emp',
+                                                                   position='Training Manager', email='audry@gmail.com')
 
         CustomUser.objects.create_user(username='kianchi', password='test1', first_name='kian', last_name='majlessi',
                                        faculty='ce', position='anjoman', role='stu')
@@ -63,13 +64,16 @@ class AccountTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.json(), {'employees': [
             {'username': 'test', 'name': 'kian majlessi', 'faculty': 'ce', 'position': 'ceo',
-             'email': 'kianmajl@gmail.com'}, {'username': 'test_admin', 'name': 'audry ebrahimi', 'faculty': 'ce', 'email': 'audry@gmail.com', 'position': 'Training Manager'}]})
+             'email': 'kianmajl@gmail.com'},
+            {'username': 'test_admin', 'name': 'audry ebrahimi', 'faculty': 'ce', 'email': 'audry@gmail.com',
+             'position': 'Training Manager'}]})
 
     def test_get_student_list(self):
         response = self.client_rest_admin.get('/accounts/get-stu/')
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(response.json(), {'students': [{'username': 'kianchi', 'name': 'kian majlessi', 'email': '',
-                                                             'faculty': 'ce', 'position': 'anjoman'}]})
+        self.assertDictEqual(response.json(),
+                             {'students': [{'username': 'kianchi', 'name': 'kian majlessi', 'email': '',
+                                            'faculty': 'ce', 'position': 'anjoman'}]})
 
     def test_add_employee(self):
         response = self.client_rest_admin.post('/accounts/add-emp/',
@@ -79,3 +83,26 @@ class AccountTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['message'], 'Employee added successfully!')
         self.assertTrue(CustomUser.objects.filter(username='test1').exists())
+
+    def test_edit_student(self):
+        response = self.client_rest_admin.put('/accounts/edit-stu/',
+                                              data={'username': 'kianchi', 'first_name': 'audry',
+                                                    'phone': '09111111111'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'Student updated successfully!')
+        self.assertEqual(CustomUser.objects.get(username='kianchi').first_name, 'audry')
+        self.assertEqual(CustomUser.objects.get(username='kianchi').phone, '09111111111')
+
+    def test_delete_employee(self):
+        response = self.client_rest_admin.delete('/accounts/delete-emp/', data={'username': 'test'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'Employee deleted successfully!')
+        self.assertFalse(CustomUser.objects.filter(username='test').exists())
+
+    def test_edit_employee(self):
+        response = self.client_rest_admin.put('/accounts/edit-emp/', data={'username': 'test', 'position': 'security'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'Employee updated successfully!')
+        self.assertEqual(CustomUser.objects.get(username='test').position, 'security')
+        
