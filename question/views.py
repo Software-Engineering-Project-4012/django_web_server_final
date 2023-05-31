@@ -2,6 +2,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+
+from questionnaire.models import QuestionnaireTemplate
 from .models import Question
 
 
@@ -23,6 +25,25 @@ class CreateQuestionView(APIView):
         question.save()
         return Response({'message': 'Question created successfully'}, status=status.HTTP_201_CREATED)
 
+
+class GetQuestionsView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        template_id = request.query_params.get('template_id')
+        questions = Question.objects.filter(template=template_id)
+        return Response({'questions': questions}, status=status.HTTP_200_OK)
+
+
+class DeleteQuestionView(APIView):
+    permission_classes = (IsAdminUser,)
+
+    def delete(self, request, *args, **kwargs):
+        question = Question.objects.get(id=request.data.get('question_id'))
+        question.delete()
+        return Response({'message': 'Question deleted successfully'}, status=status.HTTP_200_OK)
+
+
 class EditQuestionView(APIView):
     permission_classes = (IsAdminUser,)
 
@@ -31,7 +52,7 @@ class EditQuestionView(APIView):
         question.question_type = request.data.get('type')
         question.question_text = request.data.get('question')
         question.template_id = request.data.get('template_id')
-        question.template = QuestionnaireTemplate.objects.get(id=template_id)
+        question.template = QuestionnaireTemplate.objects.get(id=question.template_id)
         question.question_position = request.data.get('number')
         question.style = request.data.get('style')
         question.rows = request.data.get('rows')
