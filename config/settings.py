@@ -49,6 +49,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'accounts.apps.AccountsConfig',
     'questionnaire.apps.QuestionnaireConfig',
+    'question.apps.QuestionConfig'
 ]
 
 INSTALLED_APPS = DJANGO_DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS
