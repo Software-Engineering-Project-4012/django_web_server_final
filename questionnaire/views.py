@@ -25,6 +25,11 @@ class QuestionnaireTemplateRetrieveUpdateDestroyView(generics.RetrieveUpdateDest
     def get_queryset(self):
         return QuestionnaireTemplate.objects.filter(creator=self.request.user)
 
+    def delete(self, request, pk=None):
+        instance = QuestionnaireTemplate.objects.filter(id=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class QuestionnaireList(generics.ListCreateAPIView):
     search_fields = ['employee__first_name', 'employee__last_name', 'deadline', 'template__template_name']
