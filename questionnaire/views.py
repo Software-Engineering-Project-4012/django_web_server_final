@@ -52,3 +52,8 @@ class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Questionnaire.objects.filter(creator=self.request.user)
+
+    def delete(self, request, pk=None):
+        instance = QuestionnaireTemplate.objects.filter(id=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
