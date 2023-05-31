@@ -23,7 +23,7 @@ class CustomUser(AbstractUser):
     faculty = models.CharField(max_length=1000, blank=True)
     gender = models.CharField(max_length=2, choices=Gender.choices, default=Gender.UNSET)
     phone = models.CharField(max_length=15, validators=[phone_validator], blank=True)
-    image_path = request.data.get("image_path")
+    imagePath = models.CharField(max_length=1000, blank=True)
     def __str__(self):
         return self.username
 
