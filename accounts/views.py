@@ -26,6 +26,7 @@ class CustomAuthToken(ObtainAuthToken):
         return Response({
             'token': token.key,
             'user_full_name': user.get_full_name(),
+            'image_path': user.imagePath,
             'is_staff': user.is_staff
         }, status=status.HTTP_200_OK)
 
