@@ -111,7 +111,7 @@ class AddEmployeeAPIView(APIView):
         faculty = request.data.get("faculty")
         position = request.data.get("position")
         role = 'emp'
-
+        image_path = request.data.get("image_path")
         password = CustomUser.objects.make_random_password()
 
         CustomUser.objects.create_user(username=username, email=email, password=password, first_name=first_name,
