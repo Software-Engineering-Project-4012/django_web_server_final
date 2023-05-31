@@ -12,4 +12,5 @@ urlpatterns = [
     path('delete-emp/', DeleteEmployeeAPIView.as_view()),
     path('get-stu/', GetStudentsListAPIView.as_view()),
     path('edit-stu/', EditStudentAPIView.as_view()),
+    path('forget-password/', ForgetPasswordAPIView.as_view()),
 ]

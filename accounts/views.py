@@ -5,7 +5,14 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.hashers import check_password
 from rest_framework.authtoken.views import ObtainAuthToken
+from django.shortcuts import get_object_or_404
 from accounts.models import CustomUser
+import ghasedakpack
+import secrets
+
+
+SMS_API = 'c892fcf70ec41cec06b46bade01398c9f06fb3b4003438d115216e86c2527521'
+LINE_NUMBER = '5000270'
 
 
 class CustomAuthToken(ObtainAuthToken):
