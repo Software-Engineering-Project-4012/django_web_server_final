@@ -6,14 +6,13 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.hashers import check_password
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.shortcuts import get_object_or_404
+
 from accounts.models import CustomUser
 import ghasedakpack
 import secrets
-from .serializers import CustomUserSerializer
-from rest_framework import filters
 
-SMS_API = 'c892fcf70ec41cec06b46bade01398c9f06fb3b4003438d115216e86c2527521'
-LINE_NUMBER = '5000270'
+SMS_API = 'API_KEY'
+LINE_NUMBER = 'LINE_NUMBER'
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -27,7 +26,6 @@ class CustomAuthToken(ObtainAuthToken):
         return Response({
             'token': token.key,
             'user_full_name': user.get_full_name(),
-            'image_path': user.imagePath,
             'is_staff': user.is_staff
         }, status=status.HTTP_200_OK)
 
@@ -85,8 +83,6 @@ class ChangeEmailAPIView(APIView):
 
 
 class GetEmployeeListAPIView(APIView):
-    search_fields = ['first_name', 'last_name', 'position', 'username', 'email']
-    filter_backends = (filters.SearchFilter,)
     permission_classes = (IsAdminUser,)
 
     def get(self, request, *args, **kwargs):
@@ -114,11 +110,11 @@ class AddEmployeeAPIView(APIView):
         faculty = request.data.get("faculty")
         position = request.data.get("position")
         role = 'emp'
-        image_path = request.data.get("image_path")
+
         password = CustomUser.objects.make_random_password()
 
         CustomUser.objects.create_user(username=username, email=email, password=password, first_name=first_name,
-                                       last_name=last_name, faculty=faculty, position=position, role=role, imagePath=image_path)
+                                       last_name=last_name, faculty=faculty, position=position, role=role)
         return Response({"message": "Employee added successfully!", "user_pass": password}, status=status.HTTP_200_OK)
 
 
@@ -195,3 +191,22 @@ class EditStudentAPIView(APIView):
         user.save()
 
         return Response({"message": "Student updated successfully!"}, status=status.HTTP_200_OK)
+
+
+class ForgetPasswordAPIView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        number = request.GET.get("phone")
+
+        sms = ghasedakpack.Ghasedak(SMS_API)
+
+        password_length = 6
+        sms_pass = secrets.token_urlsafe(password_length)
+        sms_txt = f'Your new password is: {sms_pass}'
+        if sms.send({f'message': {str(sms_txt)}, 'receptor': {str(number)}, 'linenumber': {str(LINE_NUMBER)}}):
+            user = get_object_or_404(CustomUser, phone=number)
+            user.set_password(sms_pass)
+            user.save()
+            return Response({"message": "Password sent and updated successfully!"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Error in sending sms!"}, status=status.HTTP_400_BAD_REQUEST)
