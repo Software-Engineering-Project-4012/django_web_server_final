@@ -2,6 +2,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import QuestionnaireTemplateSerializer, QuestionnaireSerializer
 from .models import QuestionnaireTemplate, Questionnaire, Submission
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters
@@ -66,7 +67,7 @@ class SubmissionQuestionnaireGet(APIView):
     permission_classes = (IsAdminUser, )
 
     def get(self, request, *args, **kwargs):
-        questionnaire_id = Questionnaire.objects.get(id=request.GET.get('id'))
+        questionnaire_id = get_object_or_404(Questionnaire, id=request.GET.get('id'))
         submissions = Submission.objects.filter(questionnaire=questionnaire_id).values()
 
         return Response(context={'submissions': submissions}, status=status.HTTP_200_OK)
@@ -76,8 +77,7 @@ class SubmissionQuestionnaireCreate(APIView):
     permission_classes = (IsAdminUser, )
 
     def post(self, request, *args, **kwargs):
-        questionnaire_id = Questionnaire.objects.get(
-            id=request.data.get('questionnaire'))
+        questionnaire_id = get_object_or_404(Questionnaire, id=request.data.get('questionnaire'))
         user_id = request.data.get('user')
         user = questionnaire_id.users.get(id=user_id)
         submission = Submission.objects.create(questionnaire=questionnaire_id, user=user, answers=request.data.get('answers'))
@@ -89,7 +89,7 @@ class SubmissionQuestionnaireDelete(APIView):
     permission_classes = (IsAdminUser, )
 
     def delete(self, request, *args, **kwargs):
-        questionnaire_id = Questionnaire.objects.get(id=request.GET.get('id'))
+        questionnaire_id = get_object_or_404(Questionnaire, id=request.GET.get('questionnaire_id'))
         submissions = Submission.objects.filter(questionnaire=questionnaire_id)
         for submission in submissions:
             submission.delete()
@@ -100,7 +100,7 @@ class UserNotRespondedSubmisssion(APIView):
     permission_classes = (IsAdminUser, )
 
     def get(self, request, *args, **kwargs):
-        questionnaire_id = Questionnaire.objects.get(id=request.GET.get('id'))
+        questionnaire_id = get_object_or_404(Questionnaire, id=request.GET.get('id'))
         users = questionnaire_id.users.all()
         submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('user', flat=True)
         users_not_responded = []
