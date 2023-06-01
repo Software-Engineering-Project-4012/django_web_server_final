@@ -145,3 +145,20 @@ class ExportExcel(APIView):
                 ws.write(row_num, 4, myJson[row]['value'], font_style)
         wb.save(response)
         return response
+class ExportCSV(APIView):
+    permission_classes = (IsAdminUser,)
+
+    def get(self, request, id):
+        questionnaire_id = get_object_or_404(Questionnaire, id=id)
+        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('questionnaire', 'user', 'date', 'answers')
+        submissions = [[x.strftime("%Y-%m-%d %H:%M") if isinstance(x, datetime.datetime) else x for x in submission] for submission in submissions]
+        response = HttpResponse(content_type='text/csv')
+        file_name = "results_questionnaire" + str(questionnaire_id.id) + ".csv"
+        response['Content-Disposition'] = 'attachment; filename="' + file_name + '"'
+        writer = csv.writer(response)
+        writer.writerow(['Questionnaire ID', 'User ID', 'Date', 'Question ID', 'Answer'])
+        for sub in submissions:
+            myJson = json.loads(json.dumps(sub[3]))
+            for row in range(len(myJson)):
+                writer.writerow([sub[0], sub[1], sub[2], myJson[row]['id'],myJson[row]['value']])
+        return response
