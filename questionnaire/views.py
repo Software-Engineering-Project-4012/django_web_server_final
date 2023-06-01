@@ -8,7 +8,10 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from question.models import Question
-
+import json
+import xlwt
+from django.http import HttpResponse
+import datetime
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
     search_fields = ['template_name']
@@ -113,3 +116,32 @@ class GetNumberQuestions(APIView):
     def get(self, request, *args, **kwargs):
         questions = Question.objects.filter(template__id=request.GET.get('id')).values()
         return Response({'number_questions': len(questions)}, status=status.HTTP_200_OK)
+class ExportExcel(APIView):
+    permission_classes = (IsAdminUser, )
+
+    def get(self, request, id):
+        questionnaire_id = get_object_or_404(Questionnaire, id=id)
+        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('questionnaire', 'user', 'date', 'answers')
+        submissions = [[x.strftime("%Y-%m-%d %H:%M") if isinstance(x, datetime.datetime) else x for x in submission] for submission in submissions]
+        response = HttpResponse(content_type='application/ms-excel')
+        file_name = "results_questionnaire" + str(questionnaire_id.id) + ".xls"
+        response['Content-Disposition'] = 'attachment; filename="' + file_name + '"'
+        wb = xlwt.Workbook(encoding='utf-8')
+        ws = wb.add_sheet('Submissions')
+        row_num = 0
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+        columns = ['Questionnaire ID', 'User ID', 'Date', 'Question ID', 'Answer']
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+        font_style = xlwt.XFStyle()
+        for sub in submissions:
+            myJson = json.loads(json.dumps(sub[3]))
+            for row in range(len(myJson)):
+                row_num += 1
+                for col_num in range(3):
+                    ws.write(row_num, col_num, sub[col_num], font_style)
+                ws.write(row_num, 3, myJson[row]['id'], font_style)
+                ws.write(row_num, 4, myJson[row]['value'], font_style)
+        wb.save(response)
+        return response
