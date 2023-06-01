@@ -1,8 +1,11 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import QuestionnaireTemplateSerializer, QuestionnaireSerializer
-from .models import QuestionnaireTemplate, Questionnaire
+from .models import QuestionnaireTemplate, Questionnaire, Submission
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework import filters
+from rest_framework import status
 
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
@@ -57,3 +60,13 @@ class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
         instance = QuestionnaireTemplate.objects.filter(id=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class SubmissionQuestionnaireGet(APIView):
+    permission_classes = (IsAdminUser, )
+
+    def get(self, request, *args, **kwargs):
+        questionnaire_id = Questionnaire.objects.get(id=request.GET.get('id'))
+        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values()
+
+        return Response(context={'submissions': submissions}, status=status.HTTP_200_OK)
