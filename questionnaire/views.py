@@ -49,9 +49,6 @@ class QuestionnaireList(generics.ListCreateAPIView):
             return Questionnaire.objects.filter(template__creator=self.request.user)
         return self.request.user.users.all()
 
-    def perform_create(self, serializer):
-        serializer.save(creator=self.request.user)
-
 
 class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = QuestionnaireSerializer
