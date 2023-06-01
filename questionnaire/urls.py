@@ -6,4 +6,5 @@ urlpatterns = [
     path('questionnaire_template/<int:pk>/', QuestionnaireTemplateRetrieveUpdateDestroyView.as_view()),
     path('questionnaires/', QuestionnaireList.as_view()),
     path('questionnaires/<int:pk>/', QuestionnaireDetail.as_view()),
+    path('questionnaires/number_questions/<int:pk>/', GetNumberQuestions.as_view()),
 ]

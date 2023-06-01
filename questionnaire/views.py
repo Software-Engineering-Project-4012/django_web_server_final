@@ -57,3 +57,9 @@ class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
         instance = QuestionnaireTemplate.objects.filter(id=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class GetNumberQuestions(APIView):
+
+    def get(self, request, *args, **kwargs):
+        return Response({"number_questions": Question.objects.filter(template__id=kwargs['pk']).count()})
