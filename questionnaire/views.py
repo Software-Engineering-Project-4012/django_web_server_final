@@ -3,6 +3,9 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import QuestionnaireTemplateSerializer, QuestionnaireSerializer
 from .models import QuestionnaireTemplate, Questionnaire
 from rest_framework import filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from question.models import Question
 
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
@@ -57,3 +60,9 @@ class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
         instance = QuestionnaireTemplate.objects.filter(id=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class GetNumberQuestions(APIView):
+
+    def get(self, request, *args, **kwargs):
+        return Response({"number_questions": Question.objects.filter(template__id=kwargs['pk']).count()})
