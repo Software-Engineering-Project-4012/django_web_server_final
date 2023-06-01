@@ -13,4 +13,5 @@ urlpatterns = [
     path('get-stu/', GetStudentsListAPIView.as_view()),
     path('edit-stu/', EditStudentAPIView.as_view()),
     path('forget-password/', ForgetPasswordAPIView.as_view()),
+    path('change-phone/', ChangePhoneAPIView.as_view()),
 ]
