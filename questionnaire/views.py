@@ -72,6 +72,19 @@ class SubmissionQuestionnaireGet(APIView):
         return Response(context={'submissions': submissions}, status=status.HTTP_200_OK)
 
 
+class SubmissionQuestionnaireCreate(APIView):
+    permission_classes = (IsAdminUser, )
+
+    def post(self, request, *args, **kwargs):
+        questionnaire_id = Questionnaire.objects.get(
+            id=request.data.get('questionnaire'))
+        user_id = request.data.get('user')
+        user = questionnaire_id.users.get(id=user_id)
+        submission = Submission.objects.create(questionnaire=questionnaire_id, user=user, answers=request.data.get('answers'))
+        submission.save()
+        return Response(context={'message': 'submission created successfully!'}, status=status.HTTP_201_CREATED)
+
+
 class SubmissionQuestionnaireDelete(APIView):
     permission_classes = (IsAdminUser, )
 
