@@ -1,0 +1,1 @@
+[{"model": "questionnaire.questionnairetemplate", "pk": 1, "fields": {"template_name": "نحوه برخورد با دانشجو", "description": "پرسشنامه مربوط به نحوه برخورد با دانشجو", "creator": 2}}, {"model": "questionnaire.questionnairetemplate", "pk": 2, "fields": {"template_name": "نحوه برخورد با همکاران", "description": "پرسشنامه مربوط به نحوه برخورد با همکاران", "creator": 2}}]
