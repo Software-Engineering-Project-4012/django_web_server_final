@@ -82,3 +82,16 @@ class SubmissionQuestionnaireDelete(APIView):
             submission.delete()
 
         return Response({"message": f"submissions for questionnaire with id:{questionnaire_id} deleted successfully!"}, status=status.HTTP_204_NO_CONTENT)
+
+class UserNotRespondedSubmisssion(APIView):
+    permission_classes = (IsAdminUser, )
+
+    def get(self, request, *args, **kwargs):
+        questionnaire_id = Questionnaire.objects.get(id=request.GET.get('id'))
+        users = questionnaire_id.users.all()
+        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('user', flat=True)
+        users_not_responded = []
+        for user in users:
+            if user not in submissions:
+                users_not_responded.append(user)
+        return Response(context={'users_not_responded': users_not_responded}, status=status.HTTP_200_OK)
