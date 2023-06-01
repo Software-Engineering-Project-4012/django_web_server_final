@@ -71,15 +71,33 @@ class ChangeEmailAPIView(APIView):
         user = request.user
 
         new_email = request.data.get("new_email")
-        confirm_email = request.data.get("confirm_email")
+        password = request.data.get("password")
 
-        if new_email != confirm_email:
-            return Response({"message": "Emails do not match"}, status=status.HTTP_400_BAD_REQUEST)
+        if not check_password(password, user.password):
+            return Response({"message": "Password do not match"}, status=status.HTTP_400_BAD_REQUEST)
 
         user.email = new_email
         user.save()
 
         return Response({"message": "Email updated successfully!"}, status=status.HTTP_200_OK)
+
+
+class ChangePhoneAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request, *args, **kwargs):
+        user = request.user
+
+        new_phone = request.data.get("new_phone")
+        password = request.data.get("password")
+
+        if not check_password(password, user.password):
+            return Response({"message": "Password do not match"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.phone = new_phone
+        user.save()
+
+        return Response({"message": "Phone updated successfully!"}, status=status.HTTP_200_OK)
 
 
 class GetEmployeeListAPIView(APIView):
