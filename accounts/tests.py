@@ -53,11 +53,20 @@ class AccountTest(TestCase):
     def test_change_email(self):
         response = self.client_rest_user.put('/accounts/change-email/',
                                              data={'new_email': 'kianmajl@outlook.com',
-                                                   'confirm_email': 'kianmajl@outlook.com'})
+                                                   'password': 'test'})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['message'], 'Email updated successfully!')
         self.assertEqual(CustomUser.objects.get(username='test').email, 'kianmajl@outlook.com')
+
+    def test_change_phone(self):
+        response = self.client_rest_user.put('/accounts/change-phone/',
+                                             data={'new_phone': '0911123443',
+                                                   'password': 'test'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'Phone updated successfully!')
+        self.assertEqual(CustomUser.objects.get(username='test').phone, '0911123443')
 
     def test_get_employee_list(self):
         response = self.client_rest_admin.get('/accounts/get-emp/')

@@ -30,8 +30,8 @@ class QuestionnaireTemplateRetrieveUpdateDestroyView(generics.RetrieveUpdateDest
     def get_queryset(self):
         return QuestionnaireTemplate.objects.filter(creator=self.request.user)
 
-    def delete(self, request, pk=None):
-        instance = QuestionnaireTemplate.objects.filter(id=pk)
+    def delete(self, request, *args, **kwargs):
+        instance = get_object_or_404(QuestionnaireTemplate, id=request.data.get('pk'))
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -55,8 +55,8 @@ class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Questionnaire.objects.filter(creator=self.request.user)
 
-    def delete(self, request, pk=None):
-        instance = QuestionnaireTemplate.objects.filter(id=pk)
+    def delete(self, request, *args, **kwargs):
+        instance = get_object_or_404(Questionnaire,id=request.data.get('pk'))
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
