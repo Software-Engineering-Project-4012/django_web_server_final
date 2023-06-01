@@ -70,3 +70,15 @@ class SubmissionQuestionnaireGet(APIView):
         submissions = Submission.objects.filter(questionnaire=questionnaire_id).values()
 
         return Response(context={'submissions': submissions}, status=status.HTTP_200_OK)
+
+
+class SubmissionQuestionnaireDelete(APIView):
+    permission_classes = (IsAdminUser, )
+
+    def delete(self, request, *args, **kwargs):
+        questionnaire_id = Questionnaire.objects.get(id=request.GET.get('id'))
+        submissions = Submission.objects.filter(questionnaire=questionnaire_id)
+        for submission in submissions:
+            submission.delete()
+
+        return Response({"message": f"submissions for questionnaire with id:{questionnaire_id} deleted successfully!"}, status=status.HTTP_204_NO_CONTENT)
