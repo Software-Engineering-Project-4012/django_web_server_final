@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters
 from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from question.models import Question
 
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
@@ -60,9 +63,9 @@ class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, pk=None):
         instance = QuestionnaireTemplate.objects.filter(id=pk)
         instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
+        return Response(status=status.HTTP_204_NO_CONTENT)    
 
+      
 class SubmissionQuestionnaireGet(APIView):
     permission_classes = (IsAdminUser, )
 
@@ -108,3 +111,9 @@ class UserNotRespondedSubmisssion(APIView):
             if user not in submissions:
                 users_not_responded.append(user)
         return Response(context={'users_not_responded': users_not_responded}, status=status.HTTP_200_OK)
+
+
+class GetNumberQuestions(APIView):
+
+    def get(self, request, *args, **kwargs):
+        return Response({"number_questions": Question.objects.filter(template__id=kwargs['pk']).count()})
