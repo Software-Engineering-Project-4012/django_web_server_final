@@ -11,6 +11,7 @@ urlpatterns = [
     path('submissions/create/', SubmissionQuestionnaireCreate.as_view()),
     path('submissions/delete/', SubmissionQuestionnaireDelete.as_view()),
     path('submissions/not-responded-users/', UserNotRespondedSubmission.as_view()),
+    path('submissions/responded-users/', UserRespondedSubmission.as_view()),
     path('submissions/export_excel/<int:id>/', ExportExcel.as_view()),
     path('submissions/export_csv/<int:id>/', ExportCSV.as_view()),
 ]

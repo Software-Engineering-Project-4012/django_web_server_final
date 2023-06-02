@@ -6,18 +6,18 @@ from .models import *
 from question.models import Question
 
 
-# Create your tests here.
-
 class QuestionnaireTest(TestCase):
     def setUp(self) -> None:
         self.user_test = CustomUser.objects.create_user(username='test', password='test', first_name='kian',
                                                         last_name='majlessi', faculty='ce',
-                                                        email='kianmajl@gmail.com', role='emp', position='ceo')
+                                                        email='kianmajl@gmail.com', role='emp', position='ceo',
+                                                        phone='09111111111')
 
         self.user_admin_test = CustomUser.objects.create_superuser(username='test_admin', password='test_admin',
                                                                    first_name='audry', last_name='ebrahimi',
                                                                    faculty='ce', role='emp',
-                                                                   position='Training Manager', email='audry@gmail.com')
+                                                                   position='Training Manager', email='audry@gmail.com',
+                                                                   phone='09111111111')
 
         qt = QuestionnaireTemplate.objects.create(template_name='پرسشنامه کیان', description='نداریم',
                                                   creator=self.user_admin_test)
@@ -83,11 +83,11 @@ class QuestionnaireTest(TestCase):
     def test_get_submissions(self):
         response = self.client_rest_admin.get('/questionnaire/submissions/get/', data={'id': 1})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['submissions']), 1)
-        self.assertEqual(response.data['submissions'][0]['questionnaire_id'], 1)
-        self.assertEqual(response.data['submissions'][0]['user_id'], self.user_test.id)
-        self.assertEqual(response.data['submissions'][0]['date'], '1402/09/11')
-        self.assertEqual(json.loads(response.data['submissions'][0]['answers']), {'1': 'test', '2': 'test'})
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['questionnaire_id'], 1)
+        self.assertEqual(response.data[0]['user_id'], self.user_test.id)
+        self.assertEqual(response.data[0]['date'], '1402/09/11')
+        self.assertEqual(json.loads(response.data[0]['answers']), {'1': 'test', '2': 'test'})
 
     def test_create_submission(self):
         response = self.client_rest_user.post('/questionnaire/submissions/create/',
@@ -99,13 +99,23 @@ class QuestionnaireTest(TestCase):
         self.assertEqual(Submission.objects.get(id=id_obj).questionnaire_id, 2)
         self.assertEqual(Submission.objects.get(id=id_obj).user_id, self.user_test.id)
         self.assertEqual(Submission.objects.get(id=id_obj).date.strftime('%Y-%m-%d'),
-                         datetime.datetime.now().strftime('%Y-%m-%d'))
+                         datetime.datetime.utcnow().strftime('%Y-%m-%d'))
         self.assertEqual(json.loads(Submission.objects.get(id=id_obj).answers), {'1': 'test', '2': 'test'})
 
     def test_user_not_responded_submissions(self):
         response = self.client_rest_admin.get('/questionnaire/submissions/not-responded-users/', data={'id': 1})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['users_not_responded']), 0)
+        self.assertEqual(len(response.data), 0)
+
+    def test_user_responded_submissions(self):
+        response = self.client_rest_admin.get('/questionnaire/submissions/responded-users/', data={'id': 1})
+        print(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        u = CustomUser.objects.get(id=self.user_test.id)
+        self.assertEqual(response.data[0]['id'], u.id)
+        self.assertEqual(response.data[0]['full_name'], u.get_full_name())
+        self.assertEqual(response.data[0]['username'], u.username)
 
     def test_number_of_questions_per_questionnaire_template(self):
         response = self.client_rest_admin.get('/questionnaire/questionnaires/number_questions/', data={'id': 1})

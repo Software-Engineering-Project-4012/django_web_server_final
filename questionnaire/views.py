@@ -2,6 +2,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import QuestionnaireTemplateSerializer, QuestionnaireSerializer
 from .models import QuestionnaireTemplate, Questionnaire, Submission
+from accounts.models import CustomUser
 from django.shortcuts import get_object_or_404
 from rest_framework import filters
 from rest_framework import status
@@ -14,6 +15,7 @@ from django.http import HttpResponse
 import datetime
 import jdatetime
 import csv
+
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
     search_fields = ['template_name']
@@ -79,7 +81,7 @@ class SubmissionQuestionnaireGet(APIView):
             submission['date'] = jdatetime.datetime.fromgregorian(datetime=questionnaire_id.deadline).strftime(
                 "%Y/%m/%d")
             res.append(submission)
-        return Response({'submissions': res}, status=status.HTTP_200_OK)
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class SubmissionQuestionnaireCreate(APIView):
@@ -125,7 +127,25 @@ class UserNotRespondedSubmission(APIView):
         users = questionnaire.users.all().exclude(
             users__in=Submission.objects.filter(questionnaire=questionnaire).values().values_list('user',
                                                                                                   flat=True)).values()
-        return Response({'users_not_responded': users}, status=status.HTTP_200_OK)
+        ls = []
+        for user in users:
+            u = CustomUser.objects.get(id=user['user_id'])
+            ls.append({'id': user['user_id'], 'full_name': u.get_full_name(), 'username': u.username})
+
+        return Response(ls, status=status.HTTP_200_OK)
+
+
+class UserRespondedSubmission(APIView):
+    permission_classes = (IsAdminUser,)
+
+    def get(self, request, *args, **kwargs):
+        questionnaire = get_object_or_404(Questionnaire, id=request.GET.get('id'))
+        users = Submission.objects.filter(questionnaire=questionnaire).values()
+        ls = []
+        for user in users:
+            u = CustomUser.objects.get(id=user['user_id'])
+            ls.append({'id': user['user_id'], 'full_name': u.get_full_name(), 'username': u.username})
+        return Response(ls, status=status.HTTP_200_OK)
 
 
 class GetNumberQuestions(APIView):
