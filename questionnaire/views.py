@@ -43,7 +43,7 @@ class QuestionnaireList(generics.ListCreateAPIView):
     search_fields = ['employee__first_name', 'employee__last_name', 'deadline', 'template__template_name']
     filter_backends = (filters.SearchFilter,)
     serializer_class = QuestionnaireSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         if self.request.user.is_staff:
