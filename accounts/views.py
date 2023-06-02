@@ -243,3 +243,22 @@ class ForgetPasswordAPIView(APIView):
             return Response({"message": "Password sent and updated successfully!"}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Error in sending sms!"}, status=status.HTTP_400_BAD_REQUEST)
+class GetUsersListAPIView(APIView):
+    permission_classes = (IsAdminUser,)
+
+    def get(self, request, *args, **kwargs):
+        users = CustomUser.objects.filter(Q(role='stu') | Q(role='emp'))
+        search = self.request.query_params.get('search')
+        if search is not None:
+            users = users.filter(Q(first_name=search) | Q(last_name=search))
+        data = []
+        for user in users:
+            data.append({
+                "username": user.username,
+                "name": user.get_full_name(),
+                "email": user.email,
+                "faculty": user.faculty,
+                "position": user.position,
+                "phone": user.phone,
+            })
+        return Response(data, status=status.HTTP_200_OK)
