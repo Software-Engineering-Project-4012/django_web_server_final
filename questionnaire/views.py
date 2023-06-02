@@ -13,7 +13,7 @@ import xlwt
 from django.http import HttpResponse
 import datetime
 import jdatetime
-
+import csv
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
     search_fields = ['template_name']
@@ -159,12 +159,15 @@ class ExportExcel(APIView):
         font_style = xlwt.XFStyle()
         for sub in submissions:
             myJson = json.loads(json.dumps(sub[3]))
-            for row in range(len(myJson)):
+            for row in myJson:
                 row_num += 1
+                answer_value = myJson[row]
+                if isinstance(answer_value, dict):
+                    answer_value = " - ".join(str(x) for x in answer_value.values())
                 for col_num in range(3):
                     ws.write(row_num, col_num, sub[col_num], font_style)
-                ws.write(row_num, 3, myJson[row]['id'], font_style)
-                ws.write(row_num, 4, myJson[row]['value'], font_style)
+                ws.write(row_num, 3, row, font_style)
+                ws.write(row_num, 4, answer_value, font_style)
         wb.save(response)
         return response
 
@@ -185,6 +188,9 @@ class ExportCSV(APIView):
         writer.writerow(['Questionnaire ID', 'User ID', 'Date', 'Question ID', 'Answer'])
         for sub in submissions:
             myJson = json.loads(json.dumps(sub[3]))
-            for row in range(len(myJson)):
-                writer.writerow([sub[0], sub[1], sub[2], myJson[row]['id'], myJson[row]['value']])
+            for row in myJson:
+                answer_value = myJson[row]
+                if isinstance(answer_value, dict):
+                    answer_value = " - ".join(str(x) for x in answer_value.values())
+                writer.writerow([sub[0], sub[1], sub[2], row, answer_value])
         return response
