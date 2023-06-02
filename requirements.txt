@@ -10,4 +10,4 @@ ghasedakpack~=0.1.13
 requests
 jdatetime
 drf-yasg==1.21.5
-rest_framework_swagger
+django-rest-swagger
