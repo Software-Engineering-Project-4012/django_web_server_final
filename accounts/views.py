@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.hashers import check_password
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.shortcuts import get_object_or_404
-
+from django.db.models import Q
 from accounts.models import CustomUser
 import ghasedakpack
 import secrets
@@ -106,6 +106,9 @@ class GetEmployeeListAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         employees = CustomUser.objects.filter(role='emp')
+        search = self.request.query_params.get('search')
+        if search is not None:
+            employees = employees.filter(Q(first_name=search) | Q(last_name=search))
         data = []
         for employee in employees:
             data.append({
@@ -181,6 +184,9 @@ class GetStudentsListAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         students = CustomUser.objects.filter(role='stu')
+        search = self.request.query_params.get('search')
+        if search is not None:
+            students = students.filter(Q(first_name=search) | Q(last_name=search))
         data = []
         for student in students:
             data.append({
