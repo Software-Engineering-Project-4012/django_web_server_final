@@ -119,7 +119,7 @@ class GetEmployeeListAPIView(APIView):
                 "position": employee.position,
                 "phone": employee.phone,
             })
-        return Response({"employees": data}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class AddEmployeeAPIView(APIView):
@@ -197,7 +197,7 @@ class GetStudentsListAPIView(APIView):
                 "position": student.position,
                 "phone": student.phone,
             })
-        return Response({"students": data}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class EditStudentAPIView(APIView):
