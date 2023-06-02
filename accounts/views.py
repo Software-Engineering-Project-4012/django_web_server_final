@@ -113,6 +113,7 @@ class GetEmployeeListAPIView(APIView):
                 "email": employee.email,
                 "faculty": employee.faculty,
                 "position": employee.position,
+                "phone": employee.phone,
             })
         return Response({"employees": data}, status=status.HTTP_200_OK)
 
@@ -128,11 +129,11 @@ class AddEmployeeAPIView(APIView):
         faculty = request.data.get("faculty")
         position = request.data.get("position")
         role = 'emp'
-
+        phone = request.data.get("phone")
         password = CustomUser.objects.make_random_password()
 
         CustomUser.objects.create_user(username=username, email=email, password=password, first_name=first_name,
-                                       last_name=last_name, faculty=faculty, position=position, role=role)
+                                       last_name=last_name, faculty=faculty, position=position, role=role, phone=phone)
         return Response({"message": "Employee added successfully!", "user_pass": password}, status=status.HTTP_200_OK)
 
 
@@ -187,6 +188,7 @@ class GetStudentsListAPIView(APIView):
                 "email": student.email,
                 "faculty": student.faculty,
                 "position": student.position,
+                "phone": student.phone,
             })
         return Response({"students": data}, status=status.HTTP_200_OK)
 
