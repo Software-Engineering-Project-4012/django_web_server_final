@@ -15,8 +15,8 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
-        rep = super(UserSerializer, self).to_representation(instance)
+        rep = super(QuestionnaireSerializer, self).to_representation(instance)
         rep['template'] = instance.template.template_name
         rep['employee'] = instance.employee.get_full_name()
-        rep['deadline'] = jdatetime.datetime.fromgregorian(datetime=instance.deadline).strftime("%Y %m %d")
+        rep['deadline'] = jdatetime.datetime.fromgregorian(datetime=instance.deadline).strftime("%Y/%m/%d")
         return rep

@@ -20,12 +20,15 @@ class QuestionnaireTest(TestCase):
                                                                    position='Training Manager', email='audry@gmail.com')
 
         qt = QuestionnaireTemplate.objects.create(template_name='پرسشنامه کیان', description='نداریم',
-                                             creator=self.user_admin_test)
+                                                  creator=self.user_admin_test)
 
         Question.objects.create(template=qt, question_text='test', question_type='short_answer', question_position=1)
 
-        Questionnaire.objects.create(employee=self.user_test, deadline='2023-06-01', template_id=1)
+        Questionnaire.objects.create(employee=self.user_test, deadline='2023-12-02', template_id=1)
         Questionnaire.objects.get(id=1).users.add(self.user_test)
+
+        Questionnaire.objects.create(employee=self.user_test, deadline='2023-12-12', template_id=1)
+        Questionnaire.objects.get(id=2).users.add(self.user_test)
 
         Submission.objects.create(questionnaire_id=1, user_id=self.user_test.id,
                                   date='2021-06-01', answers=json.dumps({'1': 'test', '2': 'test'}))
@@ -58,23 +61,23 @@ class QuestionnaireTest(TestCase):
 
     def test_create_questionnaire(self):
         response = self.client_rest_admin.post('/questionnaire/questionnaires/',
-                                               data={'employee': self.user_test.id, 'deadline': '2024-06-01',
+                                               data={'employee': self.user_test.id, 'deadline': '2025-01-23',
                                                      'template': 1, 'users': [self.user_test.id]})
         self.assertEqual(response.status_code, 201)
         id_obj = response.data['id']
         self.assertEqual(Questionnaire.objects.get(id=id_obj).employee, self.user_test)
-        self.assertEqual(Questionnaire.objects.get(id=id_obj).deadline.strftime('%Y-%m-%d'), '2024-06-01')
+        self.assertEqual(Questionnaire.objects.get(id=id_obj).deadline.strftime('%Y-%m-%d'), '2025-01-23')
         self.assertEqual(Questionnaire.objects.get(id=id_obj).template.id, 1)
         self.assertEqual(Questionnaire.objects.get(id=id_obj).users.all()[0], self.user_test)
 
     def test_get_questionnaire_list(self):
         response = self.client_rest_admin.get('/questionnaire/questionnaires/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['employee'], self.user_test.id)
-        d1 = datetime.datetime.strptime(response.data[0]['deadline'], "%Y-%m-%dT%H:%M:%SZ").strftime('%Y-%m-%d')
-        self.assertEqual(d1, '2023-06-01')
-        self.assertEqual(response.data[0]['template'], 1)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['employee'], self.user_test.get_full_name())
+        self.assertEqual(response.data[0]['deadline'], '1402/09/11')
+        questionnaire = Questionnaire.objects.get(id=1)
+        self.assertEqual(response.data[0]['template'], questionnaire.template.template_name)
         self.assertEqual(response.data[0]['users'][0], self.user_test.id)
 
     def test_get_submissions(self):
@@ -83,19 +86,20 @@ class QuestionnaireTest(TestCase):
         self.assertEqual(len(response.data['submissions']), 1)
         self.assertEqual(response.data['submissions'][0]['questionnaire_id'], 1)
         self.assertEqual(response.data['submissions'][0]['user_id'], self.user_test.id)
-        self.assertEqual(response.data['submissions'][0]['date'].strftime('%Y-%m-%d'), '2021-06-01')
+        self.assertEqual(response.data['submissions'][0]['date'], '1402/09/11')
         self.assertEqual(json.loads(response.data['submissions'][0]['answers']), {'1': 'test', '2': 'test'})
 
     def test_create_submission(self):
         response = self.client_rest_user.post('/questionnaire/submissions/create/',
-                                              data={'questionnaire': 1, 'user': self.user_test.id,
+                                              data={'questionnaire': 2, 'user': self.user_test.id,
                                                     'answers': json.dumps({'1': 'test', '2': 'test'})})
 
         self.assertEqual(response.status_code, 201)
         id_obj = response.data['id']
-        self.assertEqual(Submission.objects.get(id=id_obj).questionnaire_id, 1)
+        self.assertEqual(Submission.objects.get(id=id_obj).questionnaire_id, 2)
         self.assertEqual(Submission.objects.get(id=id_obj).user_id, self.user_test.id)
-        self.assertEqual(Submission.objects.get(id=id_obj).date.strftime('%Y-%m-%d'), datetime.datetime.now().strftime('%Y-%m-%d'))
+        self.assertEqual(Submission.objects.get(id=id_obj).date.strftime('%Y-%m-%d'),
+                         datetime.datetime.now().strftime('%Y-%m-%d'))
         self.assertEqual(json.loads(Submission.objects.get(id=id_obj).answers), {'1': 'test', '2': 'test'})
 
     def test_user_not_responded_submissions(self):

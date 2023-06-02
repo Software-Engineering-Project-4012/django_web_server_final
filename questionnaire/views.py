@@ -12,6 +12,7 @@ import json
 import xlwt
 from django.http import HttpResponse
 import datetime
+import jdatetime
 
 
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
@@ -71,8 +72,14 @@ class SubmissionQuestionnaireGet(APIView):
     def get(self, request, *args, **kwargs):
         questionnaire_id = get_object_or_404(Questionnaire, id=request.GET.get('id'))
         submissions = Submission.objects.filter(questionnaire=questionnaire_id).values()
-
-        return Response({'submissions': submissions}, status=status.HTTP_200_OK)
+        res = []
+        for submission in submissions:
+            submission['user'] = questionnaire_id.users.get(id=submission['user_id']).get_full_name()
+            submission['answers'] = submission['answers']
+            submission['date'] = jdatetime.datetime.fromgregorian(datetime=questionnaire_id.deadline).strftime(
+                "%Y/%m/%d")
+            res.append(submission)
+        return Response({'submissions': res}, status=status.HTTP_200_OK)
 
 
 class SubmissionQuestionnaireCreate(APIView):
@@ -84,9 +91,10 @@ class SubmissionQuestionnaireCreate(APIView):
         user = questionnaire_id.users.get(id=user_id)
 
         if Submission.objects.filter(questionnaire=questionnaire_id, user=user).exists():
-            return Response({'message': 'user already submitted this questionnaire!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'user already submitted this questionnaire!'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        if datetime.datetime.now() > questionnaire_id.deadline:
+        if datetime.datetime.now().date() > questionnaire_id.deadline.date():
             return Response({'message': 'deadline passed!'}, status=status.HTTP_400_BAD_REQUEST)
 
         submission = Submission.objects.create(questionnaire=questionnaire_id, user=user,
