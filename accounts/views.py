@@ -135,9 +135,10 @@ class AddEmployeeAPIView(APIView):
         role = 'emp'
         phone = request.data.get("phone")
         password = CustomUser.objects.make_random_password()
-        image_path = request.data.get("image_path")
+        image_path = request.data.get("image_path", '')
         CustomUser.objects.create_user(username=username, email=email, password=password, first_name=first_name,
-                                       last_name=last_name, faculty=faculty, position=position, role=role, phone=phone, imagePath=image_path)
+                                       last_name=last_name, faculty=faculty, position=position, role=role, phone=phone,
+                                       imagePath=image_path)
         return Response({"message": "Employee added successfully!", "user_pass": password}, status=status.HTTP_200_OK)
 
 
@@ -243,6 +244,8 @@ class ForgetPasswordAPIView(APIView):
             return Response({"message": "Password sent and updated successfully!"}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Error in sending sms!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class GetUsersListAPIView(APIView):
     permission_classes = (IsAdminUser,)
 
