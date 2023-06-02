@@ -8,3 +8,4 @@ tzdata==2023.3
 xlwt==1.3.0
 ghasedakpack~=0.1.13
 requests
+jdatetime

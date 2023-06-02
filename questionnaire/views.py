@@ -13,6 +13,7 @@ import xlwt
 from django.http import HttpResponse
 import datetime
 
+
 class QuestionnaireTemplateListCreateView(generics.ListCreateAPIView):
     search_fields = ['template_name']
     filter_backends = (filters.SearchFilter,)
@@ -59,7 +60,7 @@ class QuestionnaireDetail(generics.RetrieveUpdateDestroyAPIView):
         return Questionnaire.objects.filter(creator=self.request.user)
 
     def delete(self, request, *args, **kwargs):
-        instance = get_object_or_404(Questionnaire,id=request.data.get('pk'))
+        instance = get_object_or_404(Questionnaire, id=request.data.get('pk'))
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -81,6 +82,13 @@ class SubmissionQuestionnaireCreate(APIView):
         questionnaire_id = get_object_or_404(Questionnaire, id=request.data.get('questionnaire'))
         user_id = request.data.get('user')
         user = questionnaire_id.users.get(id=user_id)
+
+        if Submission.objects.filter(questionnaire=questionnaire_id, user=user).exists():
+            return Response({'message': 'user already submitted this questionnaire!'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if datetime.datetime.now() > questionnaire_id.deadline:
+            return Response({'message': 'deadline passed!'}, status=status.HTTP_400_BAD_REQUEST)
+
         submission = Submission.objects.create(questionnaire=questionnaire_id, user=user,
                                                answers=request.data.get('answers'))
         submission.save()
@@ -106,7 +114,9 @@ class UserNotRespondedSubmission(APIView):
 
     def get(self, request, *args, **kwargs):
         questionnaire = get_object_or_404(Questionnaire, id=request.GET.get('id'))
-        users = questionnaire.users.all().exclude(users__in=Submission.objects.filter(questionnaire=questionnaire).values().values_list('user', flat=True)).values()
+        users = questionnaire.users.all().exclude(
+            users__in=Submission.objects.filter(questionnaire=questionnaire).values().values_list('user',
+                                                                                                  flat=True)).values()
         return Response({'users_not_responded': users}, status=status.HTTP_200_OK)
 
 
@@ -116,13 +126,17 @@ class GetNumberQuestions(APIView):
     def get(self, request, *args, **kwargs):
         questions = Question.objects.filter(template__id=request.GET.get('id')).values()
         return Response({'number_questions': len(questions)}, status=status.HTTP_200_OK)
+
+
 class ExportExcel(APIView):
-    permission_classes = (IsAdminUser, )
+    permission_classes = (IsAdminUser,)
 
     def get(self, request, id):
         questionnaire_id = get_object_or_404(Questionnaire, id=id)
-        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('questionnaire', 'user', 'date', 'answers')
-        submissions = [[x.strftime("%Y-%m-%d %H:%M") if isinstance(x, datetime.datetime) else x for x in submission] for submission in submissions]
+        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('questionnaire', 'user',
+                                                                                            'date', 'answers')
+        submissions = [[x.strftime("%Y-%m-%d %H:%M") if isinstance(x, datetime.datetime) else x for x in submission] for
+                       submission in submissions]
         response = HttpResponse(content_type='application/ms-excel')
         file_name = "results_questionnaire" + str(questionnaire_id.id) + ".xls"
         response['Content-Disposition'] = 'attachment; filename="' + file_name + '"'
@@ -145,13 +159,17 @@ class ExportExcel(APIView):
                 ws.write(row_num, 4, myJson[row]['value'], font_style)
         wb.save(response)
         return response
+
+
 class ExportCSV(APIView):
     permission_classes = (IsAdminUser,)
 
     def get(self, request, id):
         questionnaire_id = get_object_or_404(Questionnaire, id=id)
-        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('questionnaire', 'user', 'date', 'answers')
-        submissions = [[x.strftime("%Y-%m-%d %H:%M") if isinstance(x, datetime.datetime) else x for x in submission] for submission in submissions]
+        submissions = Submission.objects.filter(questionnaire=questionnaire_id).values_list('questionnaire', 'user',
+                                                                                            'date', 'answers')
+        submissions = [[x.strftime("%Y-%m-%d %H:%M") if isinstance(x, datetime.datetime) else x for x in submission] for
+                       submission in submissions]
         response = HttpResponse(content_type='text/csv')
         file_name = "results_questionnaire" + str(questionnaire_id.id) + ".csv"
         response['Content-Disposition'] = 'attachment; filename="' + file_name + '"'
@@ -160,5 +178,5 @@ class ExportCSV(APIView):
         for sub in submissions:
             myJson = json.loads(json.dumps(sub[3]))
             for row in range(len(myJson)):
-                writer.writerow([sub[0], sub[1], sub[2], myJson[row]['id'],myJson[row]['value']])
+                writer.writerow([sub[0], sub[1], sub[2], myJson[row]['id'], myJson[row]['value']])
         return response
