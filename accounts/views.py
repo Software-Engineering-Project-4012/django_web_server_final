@@ -26,6 +26,7 @@ class CustomAuthToken(ObtainAuthToken):
         return Response({
             'token': token.key,
             'user_full_name': user.get_full_name(),
+            'image_path': user.imagePath,
             'is_staff': user.is_staff
         }, status=status.HTTP_200_OK)
 
@@ -131,9 +132,9 @@ class AddEmployeeAPIView(APIView):
         role = 'emp'
         phone = request.data.get("phone")
         password = CustomUser.objects.make_random_password()
-
+        image_path = request.data.get("image_path")
         CustomUser.objects.create_user(username=username, email=email, password=password, first_name=first_name,
-                                       last_name=last_name, faculty=faculty, position=position, role=role, phone=phone)
+                                       last_name=last_name, faculty=faculty, position=position, role=role, phone=phone, imagePath=image_path)
         return Response({"message": "Employee added successfully!", "user_pass": password}, status=status.HTTP_200_OK)
 
 
