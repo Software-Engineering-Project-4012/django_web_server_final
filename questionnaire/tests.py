@@ -109,7 +109,6 @@ class QuestionnaireTest(TestCase):
 
     def test_user_responded_submissions(self):
         response = self.client_rest_admin.get('/questionnaire/submissions/responded-users/', data={'id': 1})
-        print(response.data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         u = CustomUser.objects.get(id=self.user_test.id)
